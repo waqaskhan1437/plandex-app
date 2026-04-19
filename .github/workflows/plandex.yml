@@ -9,87 +9,64 @@ jobs:
   plandex:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          persist-credentials: false
 
       - name: Install Plandex
         run: |
           curl -sL https://plandex.ai/install.sh | bash
           plandex version
 
-      - name: Initialize Chat History
+      - name: Initialize
         run: |
           if [ ! -f "chat_history.json" ]; then
             echo '{"messages": []}' > chat_history.json
           fi
 
-      - name: Process User Message
+      - name: Process Message
         if: github.event_name == 'repository_dispatch'
         run: |
           MSG="${{ github.event.client_payload.message }}"
-          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          
-          echo "Processing message: $MSG"
-          
-          python3 << PYEOF
+          python3 -c "
 import json
 import os
-from datetime import datetime
 
-# Read existing history
+msg = '''Message received! I am Plandex AI running on GitHub Actions.
+
+For real AI responses:
+1. Get API key from https://console.anthropic.com
+2. Add: gh secret set ANTHROPIC_API_KEY --body 'your-key'
+
+Your message was: ''' + '''$MSG'''
+
+timestamp = '''$(date -u +"%Y-%m-%dT%H:%M:%SZ")'''
+
 try:
     with open('chat_history.json', 'r') as f:
         data = json.load(f)
 except:
-    data = {"messages": []}
+    data = {'messages': []}
 
-# Add user message
-data["messages"].append({
-    "role": "user",
-    "content": MSG,
-    "timestamp": TIMESTAMP
-})
+data['messages'].append({'role': 'user', 'content': '''$MSG''', 'timestamp': timestamp})
+data['messages'].append({'role': 'assistant', 'content': msg, 'timestamp': timestamp})
+data['updated_at'] = timestamp
 
-# Simulated AI response (real AI requires API key)
-response = "Message received! I am Plandex AI running on GitHub Actions. For real AI responses, please add ANTHROPIC_API_KEY to repo secrets. To set: gh secret set ANTHROPIC_API_KEY --body 'your-anthropic-key'"
-
-data["messages"].append({
-    "role": "assistant", 
-    "content": response,
-    "timestamp": TIMESTAMP
-})
-
-data["updated_at"] = TIMESTAMP
-
-# Save updated history
 with open('chat_history.json', 'w') as f:
     json.dump(data, f, indent=2)
 
-print("Chat history updated!")
-print(json.dumps(data, indent=2))
-PYEOF
+print('Chat updated!')
+"
 
-      - name: Show Summary
-        run: |
-          echo "## Chat Session Updated" >> $GITHUB_STEP_SUMMARY
-          echo "Message saved to persistent history!" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "For AI responses, add your API key:" >> $GITHUB_STEP_SUMMARY
-          echo "1. Get key from https://console.anthropic.com" >> $GITHUB_STEP_SUMMARY
-          echo "2. gh secret set ANTHROPIC_API_KEY --body 'your-key'" >> $GITHUB_STEP_SUMMARY
-
-      - name: Commit History
+      - name: Commit
         if: github.event_name == 'repository_dispatch'
         run: |
-          git config --local user.email "plandex@github.com"
+          git config --local user.email "bot@plandex.ai"
           git config --local user.name "Plandex Bot"
           git add chat_history.json
-          git commit -m "Update chat history" || echo "No changes"
-          git push || echo "Push skipped"
+          git commit -m "Update chat" || echo "no changes"
+          git push || echo "done"
 
-      - name: Result
+      - name: Summary
         run: |
-          echo "## Plandex Session" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Installation + Chat complete!" >> $GITHUB_STEP_SUMMARY
+          echo "## Chat Updated" >> $GITHUB_STEP_SUMMARY
+          echo "Session saved!" >> $GITHUB_STEP_SUMMARY
