@@ -16,4 +16,4 @@ jobs:
 
       - name: Verify Plandex
         run: |
-          plandex --version
+          plandex version
