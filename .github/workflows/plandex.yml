@@ -15,35 +15,51 @@ jobs:
       - name: Install Plandex
         run: |
           curl -sL https://plandex.ai/install.sh | bash
+          plandex version
 
-      - name: Get Chat Message
+      - name: Get User Message
+        if: github.event_name == 'repository_dispatch'
+        id: user-message
+        run: |
+          MSG="${{ github.event.client_payload.message }}"
+          echo "User message: $MSG" >> $GITHUB_STEP_SUMMARY
+          echo "message=$MSG" >> $GITHUB_OUTPUT
+          echo "$MSG" > user_message.txt
+
+      - name: Run Plandex Task
         if: github.event_name == 'repository_dispatch'
         run: |
-          echo "${{ github.event.client_payload.message }}" > input.txt
-          cat input.txt
-
-      - name: Run Plandex (Echo mode)
-        run: |
-          echo "Plandex is ready! Version:"
-          plandex version
+          MSG=$(cat user_message.txt)
+          echo "## User Request" >> $GITHUB_STEP_SUMMARY
+          echo "$MSG" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "=== Plandex Processing ==="
+          echo "Message received: $MSG"
           echo ""
-          echo "Available commands:"
-          echo "- plandex version - show version"
-          echo "- plandex plans - list plans"
-          echo "- plandex status - show current plan status"
+          echo "Plandex AI is installed and ready!"
+          echo ""
+          echo "📋 To use Plandex with AI models:"
+          echo "1. Set ANTHROPIC_API_KEY or OPENAI_API_KEY in repo secrets"
+          echo "2. Or use Plandex Cloud (cloud.plandex.ai)"
+          echo ""
+          echo "ℹ️ Note: GitHub Actions doesn't persist Plandex state between runs."
+          echo "For real-time chat, run Plandex locally."
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Plandex Response" >> $GITHUB_STEP_SUMMARY
+          echo "Plandex v2.2.1 is installed and ready!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "To enable AI responses:" >> $GITHUB_STEP_SUMMARY
+          echo "- Add API key to repo secrets (ANTHROPIC_API_KEY)" >> $GITHUB_STEP_SUMMARY
+          echo "- Or use self-hosted Plandex locally" >> $GITHUB_STEP_SUMMARY
 
-      - name: Upload Output
-        uses: actions/upload-artifact@v4
-        with:
-          name: plandex-output
-          path: |
-            output.txt
-            input.txt
-          retention-days: 1
+      - name: List Directory
+        run: |
+          echo "## Project Files" >> $GITHUB_STEP_SUMMARY
+          ls -la >> $GITHUB_STEP_SUMMARY
 
       - name: Summary
         run: |
-          echo "## Plandex Execution Complete" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Plandex v2.2.1 installed successfully" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Check Actions logs for full output." >> $GITHUB_STEP_SUMMARY
+          echo "✅ Workflow completed successfully!" >> $GITHUB_STEP_SUMMARY

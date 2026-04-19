@@ -5,11 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plandex AI Chat</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -29,15 +25,9 @@
             justify-content: space-between;
         }
         
-        header h1 {
-            font-size: 20px;
-            color: #58a6ff;
-        }
+        header h1 { font-size: 20px; color: #58a6ff; }
         
-        .header-buttons {
-            display: flex;
-            gap: 8px;
-        }
+        .header-buttons { display: flex; gap: 8px; align-items: center; }
         
         .icon-btn {
             background: transparent;
@@ -47,13 +37,9 @@
             border-radius: 6px;
             cursor: pointer;
             font-size: 14px;
-            transition: all 0.2s;
         }
         
-        .icon-btn:hover {
-            background: #30363d;
-            border-color: #8b949e;
-        }
+        .icon-btn:hover { background: #30363d; }
         
         .status {
             display: flex;
@@ -71,11 +57,10 @@
         
         .status-dot.ready { background: #3fb950; }
         .status-dot.running { background: #f0883e; animation: pulse 1s infinite; }
+        .status-dot.success { background: #58a6ff; }
+        .status-dot.error { background: #f85149; }
         
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         
         #chat-container {
             flex: 1;
@@ -87,10 +72,11 @@
         }
         
         .message {
-            max-width: 80%;
+            max-width: 85%;
             padding: 12px 16px;
             border-radius: 8px;
             line-height: 1.5;
+            word-wrap: break-word;
         }
         
         .message.user {
@@ -106,6 +92,7 @@
             white-space: pre-wrap;
             font-family: 'Courier New', monospace;
             font-size: 13px;
+            max-width: 95%;
         }
         
         .message.system {
@@ -114,6 +101,13 @@
             border: 1px solid #1f6feb;
             color: #58a6ff;
             font-size: 14px;
+            text-align: center;
+        }
+        
+        .message .workflow-link {
+            color: #58a6ff;
+            text-decoration: underline;
+            cursor: pointer;
         }
         
         #input-container {
@@ -136,10 +130,7 @@
             font-family: inherit;
         }
         
-        #message-input:focus {
-            outline: none;
-            border-color: #58a6ff;
-        }
+        #message-input:focus { outline: none; border-color: #58a6ff; }
         
         #send-btn {
             background: #238636;
@@ -155,7 +146,7 @@
         #send-btn:hover:not(:disabled) { background: #2ea043; }
         #send-btn:disabled { background: #6e7681; cursor: not-allowed; }
         
-        /* Settings Modal */
+        /* Modal Styles */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -163,7 +154,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.8);
             z-index: 100;
             align-items: center;
             justify-content: center;
@@ -177,28 +168,13 @@
             border-radius: 12px;
             padding: 24px;
             width: 90%;
-            max-width: 500px;
-            max-height: 90vh;
-            overflow-y: auto;
+            max-width: 480px;
         }
         
-        .modal h2 {
-            color: #58a6ff;
-            margin-bottom: 20px;
-            font-size: 24px;
-        }
+        .modal h2 { color: #58a6ff; margin-bottom: 20px; font-size: 22px; }
         
-        .form-group {
-            margin-bottom: 16px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #c9d1d9;
-        }
-        
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }
         .form-group input {
             width: 100%;
             background: #0d1117;
@@ -207,29 +183,12 @@
             padding: 12px 16px;
             color: #c9d1d9;
             font-size: 14px;
-            font-family: inherit;
         }
+        .form-group input:focus { outline: none; border-color: #58a6ff; }
         
-        .form-group input:focus {
-            outline: none;
-            border-color: #58a6ff;
-        }
+        .form-hint { font-size: 12px; color: #6e7681; margin-top: 4px; }
         
-        .form-group input::placeholder {
-            color: #6e7681;
-        }
-        
-        .form-hint {
-            font-size: 12px;
-            color: #6e7681;
-            margin-top: 4px;
-        }
-        
-        .modal-buttons {
-            display: flex;
-            gap: 12px;
-            margin-top: 24px;
-        }
+        .modal-buttons { display: flex; gap: 12px; margin-top: 24px; }
         
         .modal-btn {
             flex: 1;
@@ -241,52 +200,45 @@
             border: none;
         }
         
-        .modal-btn.primary {
-            background: #238636;
-            color: white;
+        .modal-btn.primary { background: #238636; color: white; }
+        .modal-btn.secondary { background: transparent; border: 1px solid #30363d; color: #c9d1d9; }
+        
+        /* Progress Bar */
+        #progress-container {
+            display: none;
+            background: #161b22;
+            padding: 16px 24px;
+            border-top: 1px solid #30363d;
         }
         
-        .modal-btn.secondary {
-            background: transparent;
-            border: 1px solid #30363d;
-            color: #c9d1d9;
+        #progress-container.active { display: block; }
+        
+        .progress-bar {
+            height: 4px;
+            background: #30363d;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 8px;
         }
         
-        .modal-btn:hover { opacity: 0.9; }
-        
-        .saved-info {
-            background: #0d1117;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            padding: 16px;
-            margin-top: 16px;
+        .progress-fill {
+            height: 100%;
+            background: #58a6ff;
+            width: 0%;
+            transition: width 0.5s;
         }
         
-        .saved-info h3 {
-            color: #58a6ff;
-            margin-bottom: 12px;
-            font-size: 14px;
-        }
+        .progress-text { font-size: 13px; color: #6e7681; }
         
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #30363d;
-            font-size: 13px;
-        }
-        
-        .info-row:last-child { border-bottom: none; }
-        
-        .info-label { color: #6e7681; }
-        .info-value { color: #c9d1d9; }
+        .progress-text a { color: #58a6ff; }
     </style>
 </head>
 <body>
     <header>
-        <h1>🤖 Plandex AI Chat</h1>
+        <h1>🤖 Plandex AI</h1>
         <div class="header-buttons">
-            <button class="icon-btn" id="settings-btn">⚙️ Settings</button>
+            <button class="icon-btn" id="refresh-btn">🔄</button>
+            <button class="icon-btn" id="settings-btn">⚙️</button>
             <div class="status">
                 <span class="status-dot" id="status-dot"></span>
                 <span id="status-text">Ready</span>
@@ -296,14 +248,22 @@
     
     <div id="chat-container">
         <div class="message system">
-            👋 Welcome to Plandex AI Chat!<br><br>
-            This chat interface communicates with Plandex AI agent running on GitHub Actions.<br><br>
-            ⚠️ Configure your GitHub token in Settings first!
+            👋 <b>Plandex AI Chat</b><br><br>
+            GitHub Actions par Plandex install hota hai.<br>
+            ⚠️ Note: Har message ke liye ~30-60 seconds lagein hain.<br>
+            ⚙️ Settings mein GitHub token configure karein!
         </div>
     </div>
     
+    <div id="progress-container">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="progress-text" id="progress-text">Initializing...</div>
+    </div>
+    
     <div id="input-container">
-        <textarea id="message-input" placeholder="Type your message to Plandex..." rows="1"></textarea>
+        <textarea id="message-input" placeholder="Type your message..." rows="1"></textarea>
         <button id="send-btn">Send</button>
     </div>
     
@@ -311,49 +271,29 @@
     <div class="modal-overlay" id="settings-modal">
         <div class="modal">
             <h2>⚙️ Settings</h2>
-            
             <div class="form-group">
                 <label>GitHub Personal Access Token</label>
-                <input type="password" id="github-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-                <div class="form-hint">Create token at: GitHub Settings > Developer settings > Personal access tokens</div>
-                <div class="form-hint">Required scopes: repo</div>
+                <input type="password" id="github-token" placeholder="ghp_xxxxxxxxxxxx">
+                <div class="form-hint">Create at: GitHub.com > Settings > Developer settings > Personal access tokens</div>
+                <div class="form-hint">Scopes: repo (full control)</div>
             </div>
-            
             <div class="form-group">
                 <label>Repository Owner</label>
                 <input type="text" id="github-owner" placeholder="waqaskhan1437">
             </div>
-            
             <div class="form-group">
                 <label>Repository Name</label>
                 <input type="text" id="github-repo" placeholder="plandex-app">
             </div>
-            
             <div class="modal-buttons">
                 <button class="modal-btn secondary" id="close-settings">Cancel</button>
-                <button class="modal-btn primary" id="save-settings">Save Settings</button>
-            </div>
-            
-            <div class="saved-info" id="saved-info" style="display:none;">
-                <h3>📋 Saved Configuration</h3>
-                <div class="info-row">
-                    <span class="info-label">Token:</span>
-                    <span class="info-value" id="display-token">••••••••</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Owner:</span>
-                    <span class="info-value" id="display-owner">-</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Repo:</span>
-                    <span class="info-value" id="display-repo">-</span>
-                </div>
+                <button class="modal-btn primary" id="save-settings">Save</button>
             </div>
         </div>
     </div>
     
     <script>
-        // Load from localStorage
+        // Config from localStorage
         let config = {
             token: localStorage.getItem('plandex_token') || '',
             owner: localStorage.getItem('plandex_owner') || 'waqaskhan1437',
@@ -365,25 +305,18 @@
         const sendBtn = document.getElementById('send-btn');
         const statusDot = document.getElementById('status-dot');
         const statusText = document.getElementById('status-text');
+        const progressContainer = document.getElementById('progress-container');
+        const progressFill = document.getElementById('progress-fill');
+        const progressText = document.getElementById('progress-text');
         const settingsModal = document.getElementById('settings-modal');
         
         let isProcessing = false;
-        
-        // Show saved info
-        function updateSavedInfo() {
-            const savedInfo = document.getElementById('saved-info');
-            if (config.token && config.owner && config.repo) {
-                savedInfo.style.display = 'block';
-                document.getElementById('display-token').textContent = '••••••••';
-                document.getElementById('display-owner').textContent = config.owner;
-                document.getElementById('display-repo').textContent = config.repo;
-            }
-        }
+        let latestRunId = null;
         
         function addMessage(content, type) {
             const div = document.createElement('div');
             div.className = `message ${type}`;
-            div.textContent = content;
+            div.innerHTML = content;
             chatContainer.appendChild(div);
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
@@ -393,12 +326,21 @@
             statusText.textContent = text;
         }
         
-        // Settings modal
+        function showProgress(percent, text) {
+            progressContainer.classList.add('active');
+            progressFill.style.width = percent + '%';
+            progressText.innerHTML = text;
+        }
+        
+        function hideProgress() {
+            progressContainer.classList.remove('active');
+        }
+        
+        // Settings
         document.getElementById('settings-btn').addEventListener('click', () => {
             document.getElementById('github-token').value = config.token;
             document.getElementById('github-owner').value = config.owner;
             document.getElementById('github-repo').value = config.repo;
-            updateSavedInfo();
             settingsModal.classList.add('active');
         });
         
@@ -411,61 +353,81 @@
             config.owner = document.getElementById('github-owner').value.trim();
             config.repo = document.getElementById('github-repo').value.trim();
             
-            localStorage.setItem('plandex_token', config.token);
-            localStorage.setItem('plandex_owner', config.owner);
-            localStorage.setItem('plandex_repo', config.repo);
-            
+            if (config.token && config.owner && config.repo) {
+                localStorage.setItem('plandex_token', config.token);
+                localStorage.setItem('plandex_owner', config.owner);
+                localStorage.setItem('plandex_repo', config.repo);
+                addMessage('✅ Settings saved!', 'system');
+            }
             settingsModal.classList.remove('active');
-            addMessage('✅ Settings saved!', 'system');
         });
         
+        document.getElementById('refresh-btn').addEventListener('click', () => {
+            location.reload();
+        });
+        
+        // Main chat function
         async function triggerAction(message) {
             if (!config.token) {
-                addMessage('⚠️ Please configure your GitHub token in Settings first!', 'system');
+                addMessage('⚠️ Please configure GitHub token in Settings first!', 'system');
                 settingsModal.classList.add('active');
                 return;
             }
             
-            setStatus('running', 'Running Plandex...');
             isProcessing = true;
             sendBtn.disabled = true;
             addMessage(message, 'user');
+            setStatus('running', 'Triggering...');
+            showProgress(10, 'Triggering GitHub Actions workflow...');
             
             try {
-                const response = await fetch(`https://api.github.com/repos/${config.owner}/${config.repo}/dispatches`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${config.token}`,
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/vnd.github+json'
-                    },
-                    body: JSON.stringify({
-                        event_type: 'plandex_chat',
-                        client_payload: { message }
-                    })
-                });
+                // Trigger repository dispatch
+                const response = await fetch(
+                    `https://api.github.com/repos/${config.owner}/${config.repo}/dispatches`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${config.token}`,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/vnd.github+json'
+                        },
+                        body: JSON.stringify({
+                            event_type: 'plandex_chat',
+                            client_payload: { message: message }
+                        })
+                    }
+                );
                 
-                if (!response.ok) throw new Error(`GitHub API error: ${response.status}`);
+                if (!response.ok) {
+                    throw new Error(`GitHub API error: ${response.status}`);
+                }
                 
-                addMessage('⏳ Action triggered. Waiting for Plandex...', 'system');
-                await pollWorkflowRun(message);
+                showProgress(30, 'Waiting for runner... (may take 20-40s)');
+                setStatus('running', 'Queued');
+                
+                // Poll for workflow
+                await pollWorkflow();
                 
             } catch (error) {
-                addMessage(`Error: ${error.message}`, 'system');
-                setStatus('ready', 'Ready');
+                addMessage(`❌ Error: ${error.message}`, 'system');
+                setStatus('error', 'Error');
+                hideProgress();
             } finally {
                 isProcessing = false;
                 sendBtn.disabled = false;
             }
         }
         
-        async function pollWorkflowRun(userMessage) {
+        async function pollWorkflow() {
             let attempts = 0;
-            const maxAttempts = 30;
+            const maxAttempts = 45;
             
             while (attempts < maxAttempts) {
                 await new Promise(resolve => setTimeout(resolve, 2000));
                 attempts++;
+                
+                const pct = 30 + (attempts / maxAttempts) * 60;
+                showProgress(pct, `Checking status... (${attempts * 2}s)`);
                 
                 const runsResponse = await fetch(
                     `https://api.github.com/repos/${config.owner}/${config.repo}/actions/runs?per_page=1`,
@@ -478,37 +440,85 @@
                 );
                 
                 if (!runsResponse.ok) continue;
-                const data = await runsResponse.json();
-                const latestRun = data.workflow_runs?.[0];
                 
-                if (!latestRun || latestRun.status === 'queued') {
-                    setStatus('running', 'Queued...');
+                const data = await runsResponse.json();
+                const run = data.workflow_runs?.[0];
+                
+                if (!run) continue;
+                
+                latestRunId = run.id;
+                
+                if (run.status === 'queued') {
+                    setStatus('running', 'Queued');
+                    showProgress(40, 'Workflow queued, waiting...');
                     continue;
                 }
-                if (latestRun.status === 'in_progress') {
-                    setStatus('running', 'Running...');
+                
+                if (run.status === 'in_progress') {
+                    setStatus('running', 'Running');
+                    showProgress(60, 'Plandex executing...');
+                    
+                    // Get job status
+                    const jobsResponse = await fetch(
+                        `https://api.github.com/repos/${config.owner}/${config.repo}/actions/runs/${run.id}/jobs`,
+                        {
+                            headers: {
+                                'Authorization': `Bearer ${config.token}`,
+                                'Accept': 'application/vnd.github+json'
+                            }
+                        }
+                    );
+                    
+                    if (jobsResponse.ok) {
+                        const jobsData = await jobsResponse.json();
+                        const job = jobsData.jobs?.[0];
+                        if (job) {
+                            for (const step of job.steps || []) {
+                                if (step.status === 'in_progress') {
+                                    showProgress(75, `Step: ${step.name}...`);
+                                }
+                            }
+                        }
+                    }
                     continue;
                 }
-                if (latestRun.conclusion === 'success') {
-                    setStatus('ready', 'Ready');
-                    addMessage('✅ Plandex executed! Check GitHub Actions for output.', 'assistant');
-                    return;
-                }
-                if (latestRun.conclusion === 'failure') {
-                    setStatus('ready', 'Failed');
-                    addMessage('❌ Execution failed. Check GitHub Actions logs.', 'assistant');
+                
+                if (run.status === 'completed') {
+                    showProgress(95, 'Workflow completed!');
+                    
+                    if (run.conclusion === 'success') {
+                        setStatus('success', 'Success');
+                        const runUrl = `https://github.com/${config.owner}/${config.repo}/actions/runs/${run.id}`;
+                        addMessage(
+                            `✅ <b>Plandex executed successfully!</b><br><br>` +
+                            `Duration: ${run.run_started_at ? new Date(run.run_started_at) : 'N/A'} to ${run.updated_at ? new Date(run.updated_at) : 'N/A'}<br><br>` +
+                            `View full logs: <a class="workflow-link" href="${runUrl}" target="_blank">${runUrl}</a>`,
+                            'assistant'
+                        );
+                    } else {
+                        setStatus('error', 'Failed');
+                        const runUrl = `https://github.com/${config.owner}/${config.repo}/actions/runs/${run.id}`;
+                        addMessage(
+                            `❌ Workflow failed. <a class="workflow-link" href="${runUrl}" target="_blank">View logs</a>`,
+                            'assistant'
+                        );
+                    }
+                    
+                    hideProgress();
                     return;
                 }
             }
-            setStatus('ready', 'Timeout');
-            addMessage('⏱️ Timeout waiting for response.', 'system');
+            
+            setStatus('error', 'Timeout');
+            addMessage('⏱️ Timeout (90s). Check GitHub Actions manually.', 'system');
+            hideProgress();
         }
         
         sendBtn.addEventListener('click', () => {
-            const message = messageInput.value.trim();
-            if (message && !isProcessing) {
+            const msg = messageInput.value.trim();
+            if (msg && !isProcessing) {
                 messageInput.value = '';
-                triggerAction(message);
+                triggerAction(msg);
             }
         });
         
@@ -523,11 +533,6 @@
             messageInput.style.height = 'auto';
             messageInput.style.height = Math.min(messageInput.scrollHeight, 150) + 'px';
         });
-        
-        // Init - check if config exists
-        if (!config.token) {
-            addMessage('⚠️ No settings found. Click Settings to configure.', 'system');
-        }
     </script>
 </body>
 </html>
