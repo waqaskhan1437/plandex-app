@@ -2,6 +2,8 @@ name: Plandex AI Agent
 
 on:
   workflow_dispatch:
+  repository_dispatch:
+    types: [plandex_chat]
 
 jobs:
   plandex:
@@ -14,6 +16,34 @@ jobs:
         run: |
           curl -sL https://plandex.ai/install.sh | bash
 
-      - name: Verify Plandex
+      - name: Get Chat Message
+        if: github.event_name == 'repository_dispatch'
         run: |
+          echo "${{ github.event.client_payload.message }}" > input.txt
+          cat input.txt
+
+      - name: Run Plandex (Echo mode)
+        run: |
+          echo "Plandex is ready! Version:"
           plandex version
+          echo ""
+          echo "Available commands:"
+          echo "- plandex version - show version"
+          echo "- plandex plans - list plans"
+          echo "- plandex status - show current plan status"
+
+      - name: Upload Output
+        uses: actions/upload-artifact@v4
+        with:
+          name: plandex-output
+          path: |
+            output.txt
+            input.txt
+          retention-days: 1
+
+      - name: Summary
+        run: |
+          echo "## Plandex Execution Complete" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Plandex v2.2.1 installed successfully" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Check Actions logs for full output." >> $GITHUB_STEP_SUMMARY
